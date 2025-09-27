@@ -16,8 +16,10 @@
 (function(){
   if (typeof window === "undefined") return;
 
+  const MAX_STACKTRACE_FRAMES = 5;
+
   function displayStack(url, method) {
-    const parsedStack = ErrorStackParser.parse(new Error()).slice(2);  // Remove self trace
+    const parsedStack = ErrorStackParser.parse(new Error()).slice(2, 2+MAX_STACKTRACE_FRAMES);  // remove self trace
     const now = new Date().toISOString();
     const formatted = parsedStack.map(f => {
       const file = f.fileName || f.file || "<unknown>";
@@ -32,7 +34,8 @@
   if (window.fetch) {
     const _fetch = window.fetch;
     window.fetch = function(input, init) {
-      displayStack(input.url, input.method);
+      try { displayStack(input.url, input.method); } catch(err) { console.warn(err); }
+    
       return _fetch.call(this, input, init);
     };
   }
@@ -43,7 +46,7 @@
     const _send = window.XMLHttpRequest.prototype.send;
 
     // hook open() to capture the reqyest URL itelf
-    window.XMLHttpRequest.prototype.open = function(method, url/*, async, user, pass */) {
+    window.XMLHttpRequest.prototype.open = function(method, url) {
       this.__initiator_capture_url = url;
       this.__initiator_capture_method = method;
       return _open.apply(this, arguments);
@@ -51,7 +54,7 @@
 
     // hook send() to log when actually sending
     window.XMLHttpRequest.prototype.send = function(body) {
-      displayStack(this.__initiator_capture_url || "<unknown>", this.__initiator_capture_method);
+      try { displayStack(this.__initiator_capture_url, this.__initiator_capture_method); } catch(err) { console.warn(err); }
       return _send.apply(this, arguments);
     };
   }
