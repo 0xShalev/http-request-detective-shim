@@ -19,7 +19,7 @@
   const MAX_STACKTRACE_FRAMES = 5;
 
   function displayStack(url, method) {
-    const parsedStack = ErrorStackParser.parse(new Error()).slice(0, 2+MAX_STACKTRACE_FRAMES);  // remove self trace
+    const parsedStack = ErrorStackParser.parse(new Error()).slice(2, 2+MAX_STACKTRACE_FRAMES);  // remove self trace
     const now = new Date().toISOString();
     const formatted = parsedStack.map(f => {
       const file = f.fileName || f.file || "<unknown>";
