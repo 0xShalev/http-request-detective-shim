@@ -58,6 +58,4 @@
       return _send.apply(this, arguments);
     };
   }
-
-  console.log("[InitiatorCapture] installed");
 })();
