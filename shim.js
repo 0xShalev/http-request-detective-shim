@@ -19,7 +19,7 @@
   const MAX_STACKTRACE_FRAMES = 5;
 
   function displayStack(url, method) {
-    const parsedStack = ErrorStackParser.parse(new Error()).slice(2, 2+MAX_STACKTRACE_FRAMES);  // remove self trace
+    const parsedStack = ErrorStackParser.parse(new Error()).slice(0, 2+MAX_STACKTRACE_FRAMES);  // remove self trace
     const now = new Date().toISOString();
     const formatted = parsedStack.map(f => {
       const file = f.fileName || f.file || "<unknown>";
@@ -34,8 +34,7 @@
   if (window.fetch) {
     const _fetch = window.fetch;
     window.fetch = function(input, init) {
-      try { displayStack(input.url, input.method); } catch(err) { console.warn(err); }
-    
+      try { displayStack(input, init.method); } catch(err) { console.warn(err); }
       return _fetch.call(this, input, init);
     };
   }
