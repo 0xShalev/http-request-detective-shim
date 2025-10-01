@@ -34,7 +34,20 @@
   if (window.fetch) {
     const _fetch = window.fetch;
     window.fetch = function(input, init) {
-      try { displayStack(input, init.method); } catch(err) { console.warn(err); }
+      try {
+        let url;
+        let method;
+
+        if (input instanceof Request) {
+          url = input.url;
+          method = (init && init.method) || input.method || "GET";
+        } else {
+          url = (typeof input === "string" || (typeof URL !== "undefined" && input instanceof URL)) ? String(input) : "<unknown>";
+          method = (init && init.method) || "GET";
+        }
+
+        displayStack(url, method);
+      } catch(err) { console.warn(err); console.warn(input); }
       return _fetch.call(this, input, init);
     };
   }
@@ -47,7 +60,7 @@
     // hook open() to capture the reqyest URL itelf
     window.XMLHttpRequest.prototype.open = function(method, url) {
       this.__initiator_capture_url = url;
-      this.__initiator_capture_method = method;
+      this.__initiator_capture_method = method || "GET";
       return _open.apply(this, arguments);
     };
 
